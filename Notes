@@ -1,0 +1,9 @@
+Notes for pandas-myutils module
+
+
+Installing
+	python -m pip install .
+
+
+Documentation
+	pydoc pandas_myutils.utils
