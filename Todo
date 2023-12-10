@@ -1,2 +1,9 @@
 Todo for pandas-myutils module
 
+Next Steps
+	. convert test_myutils.py to use pytest
+
+
+idx_toggle_multi() and idx_propagate_levels
+    . croak if idx argument is not an index
+

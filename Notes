@@ -1,6 +1,28 @@
 Notes for pandas-myutils module
 
 
+idx_toggle_multi()
+	Test cases
+		Add more tests so that we can test the most common occurences, such as after reading json data into pandas.
+
+		For instance, the case where we have a MultiIndex with empty strings in level values is quite common and we test that one, but test any variations I encounter in practice.
+
+	Option to add level names?
+		Should we add a boolean option e.g. add_names= or is this best level to the user?
+			new_idx.names = ['level1', 'level2', 'etc']
+
+		If we add that option what what would be the best default value, True or False?
+
+	propagate=False
+		I added this option in 2023 dec, after about 6+ months of using the module in my hockey parsers.
+
+		What should be the default?
+			I chose True because the purpose of the module is to be a convenience and the most frequent use I have for it -- at least at this time -- is to propagate levels.
+			That comes at the expense of coding legibility, simplicity, as it peppers the code with a few conditions that can make the code slightly difficult to understand -- I prefer to do-one-thing-and-do-it-well but, in this case, convenience is important. I can mitigate this by having a clear testing suite and judicious use of comments and design notes.
+
+			If I ever do change the default to False, make sure I check all my parsers and modules that use it to ensure that wouldn't break anything.
+
+
 Installing
 	python -m pip install .
 

@@ -3,6 +3,7 @@ The :mod:`pandas.myutils` My Pandas utility functions
 """
 
 import pandas as pd
+import re
 
 def order(df, cols_to_front):
     df = df[ cols_to_front + [ c for c in df if c not in cols_to_front ] ]
@@ -39,19 +40,34 @@ def idx_propagate_levels( idx, revert=False ):
     new_idx = pd.MultiIndex.from_arrays( new_columns, names=idx.names )
     return new_idx
 
-def idx_toggle_multi( idx, sep='.' ):
-    # TODO: croak if idx is not an index
+def idx_toggle_multi( idx, sep='.', propragate=True ):
     if isinstance( idx, pd.MultiIndex ):
-        idx = idx_propagate_levels( idx, revert=True )
+        if propragate:
+            idx = idx_propagate_levels( idx, revert=True )
         idx_flattened = idx.to_flat_index()
         idx_flattened = [ tuple(subitem for subitem in item if not pd.isna(subitem)) for item in idx_flattened ]
-        new_colnames = [ sep.join(x) for x in idx_flattened ]
+        new_colnames  = [ sep.join(x) for x in idx_flattened ]
+
+        # remove any trailing separators
+        if sep=='.':                                # bcs we need to escape the .
+            new_colnames = [ re.sub( r'\.*$',    '', x) for x in new_colnames ]
+        else:
+            new_colnames = [ re.sub( sep + '*$', '', x) for x in new_colnames ]
+
         new_idx = pd.Index( new_colnames )
     else:
         levels = [ tuple( colname.split( sep ) ) for colname in idx ]
+        if not propragate:
+            # add empty strings to have tuples of the same length, otherwise from_tuples() will add nan
+            max_len = max( len(t) for t in levels )
+            for i in range( len(levels) ):
+                while len( levels[i] ) < max_len:
+                    levels[i] += ('',)
+
         new_idx = pd.MultiIndex.from_tuples( levels )
-        # TODO: consider whether we should add names here of let user to this after the function returns
-        # new_idx.names = ['level1', 'level2', 'etc']
-        new_idx = idx_propagate_levels( new_idx )
+
+        if propragate:
+            new_idx = idx_propagate_levels( new_idx )
+
     return new_idx
 
