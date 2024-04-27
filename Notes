@@ -23,6 +23,35 @@ idx_toggle_multi()
 			If I ever do change the default to False, make sure I check all my parsers and modules that use it to ensure that wouldn't break anything.
 
 
+convert_to_integer()
+	Maximum values
+		not a concern, maximum values or integers can be crazy huge (google it)
+
+	arrow=True
+		allow converting to int64 (not pyarrow) if set to False
+
+	Consider making this function more general i.e. if the data is arrow, convert to arrow integer, if it isn't convert to "normal" integers (would automatically exclude cols that have nulls, I could add a para i.e. convert_to_arrow=True with a default of False).
+		Well it's a bit more complicated than that. I often want to use this function to convert int64 (not arrow) columns. Besides as it currently now stands in pandas, there is no such things as a pyarrow df. A df can have a mix of arrow dtypes and non-arrow. So I should probably just add an arrow parameter that defaults to True to convert the data, including int64 to int64[pyarrow] dtype.
+
+
+convert_to_arrow()
+	A function to convert all columns to arrow since there is currently no way (that I see as of spring 2024) to have newly created columns be arrow ones unless we explicitly set as type -- which I don't want to do.
+
+	This function is quite limited to specifc types we are listing in dtype_mapping = {}
+		we should add to this list -- albeit, the need for this function is quite temporary until pyarrow becomes fully implemented and the default, so no need to go overboard in coding this one.
+
+
+Testing
+	python -m pytest -v --setup-show
+	python -m pytest test/test_main.py
+	python -m pytest -v --setup-show test/test_main.py
+
+	In the debugger:
+		python -m pdb -m pytest
+		python -m pdb -m pytest test/test_main.py
+		python -m pdb -m pytest -v --setup-show test/test_main.py
+
+
 Installing
 	python -m pip install .
 

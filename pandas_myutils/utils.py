@@ -3,6 +3,7 @@ The :mod:`pandas.myutils` My Pandas utility functions
 """
 
 import pandas as pd
+import pyarrow as pa
 import re
 
 def order(df, cols_to_front):
@@ -70,4 +71,46 @@ def idx_toggle_multi( idx, sep='.', propragate=True ):
             new_idx = idx_propagate_levels( new_idx )
 
     return new_idx
+
+def convert_to_integer(df, cols=None, exclude=None, arrow=True):
+    if cols==None:
+        cols = df.select_dtypes( include='number' ).columns.tolist()
+
+    if exclude:
+        cols = [col for col in cols if col not in exclude]
+
+    for col in cols:
+        if arrow==True:
+            try:
+                ser = df[ col ].astype('int64[pyarrow]')
+            except pa.lib.ArrowInvalid:
+                # TODO: check if ser persists from one loop to another
+                pass
+            else:
+                df[ col ] = ser
+                del ser         # not necessary I think but cleaner to delete it I think
+        else:
+            # arrow=False not implemented yet
+            pass
+    return df
+
+def convert_to_arrow(df, cols=None, exclude=None, double=False):
+    dtype_mapping = {
+        'int64':   'int64[pyarrow]',
+        'Int64':   'int64[pyarrow]',
+        'float64': 'float[pyarrow]',
+        'bool':    'bool[pyarrow]',
+        'object':  'string[pyarrow]'
+    }
+    if double==True:
+        dtype_mapping['float64'] = 'double[pyarrow]'
+
+    if exclude:
+        cols = [col for col in cols if col not in exclude]
+
+    for col in df.columns:
+        if not isinstance( df[col].dtype, pd.ArrowDtype ):
+            current_dtype = str( df[col].dtype )
+            df[col] = df[col].astype( dtype_mapping[current_dtype] )
+    return df
 
